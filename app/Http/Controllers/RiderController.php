@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRiderRequest;
 use App\Http\Requests\UpdateRiderRequest;
 use App\Models\Rider;
+use App\Services\RiderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class RiderController extends Controller
 {
+    public function __construct(
+        private RiderService $riderService
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
         $riders = Rider::withCount([
@@ -42,7 +46,7 @@ class RiderController extends Controller
 
     public function store(StoreRiderRequest $request): JsonResponse
     {
-        $rider = Rider::create($request->validated());
+        $rider = $this->riderService->create($request->validated());
 
         return response()->json([
             'message' => 'Rider created successfully.',
@@ -54,33 +58,14 @@ class RiderController extends Controller
         UpdateRiderRequest $request,
         Rider $rider
     ): JsonResponse {
-        $data = $request->validated();
-
-        if (
-            isset($data['is_available'])
-            && $data['is_available'] === false
-            && $rider->foodOrders()
-                ->whereIn('dispatch_status', [
-                    'pending',
-                    'assigned',
-                    'preparing',
-                    'picked_up',
-                    'out_for_delivery',
-                ])
-                ->exists()
-        ) {
-            throw ValidationException::withMessages([
-                'is_available' => [
-                    'A rider with active dispatches cannot be marked unavailable.',
-                ],
-            ]);
-        }
-
-        $rider->update($data);
+        $updatedRider = $this->riderService->update(
+            $rider,
+            $request->validated()
+        );
 
         return response()->json([
             'message' => 'Rider updated successfully.',
-            'data' => $rider->fresh(),
+            'data' => $updatedRider,
         ]);
     }
 }

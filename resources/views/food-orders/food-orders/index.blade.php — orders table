@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Orders | Dispatch System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800">
+    <div class="mx-auto max-w-7xl p-6 md:p-10">
+        <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-widest text-indigo-600">
+                    FDAODP System
+                </p>
+                <h1 class="mt-2 text-3xl font-bold">Food Orders</h1>
+                <p class="mt-1 text-slate-500">Manage orders and delivery dispatch.</p>
+            </div>
+
+            <a href="{{ route('food-orders.create') }}"
+               class="rounded-lg bg-indigo-600 px-5 py-3 text-center font-semibold text-white hover:bg-indigo-700">
+                + Create Order
+            </a>
+        </div>
+
+        @if (session('success'))
+            <div class="mb-5 rounded-lg bg-green-100 p-4 text-green-800">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 p-5">
+                <h2 class="text-lg font-semibold">Order Dispatch Records</h2>
+                <p class="text-sm text-slate-500">Review the current food orders.</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                        <tr>
+                            <th class="px-5 py-4">Dispatch ID</th>
+                            <th class="px-5 py-4">Customer</th>
+                            <th class="px-5 py-4">Restaurant</th>
+                            <th class="px-5 py-4">Rider</th>
+                            <th class="px-5 py-4">Total Bill</th>
+                            <th class="px-5 py-4">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse ($foodOrders as $order)
+                            <tr class="hover:bg-slate-50">
+                                <td class="whitespace-nowrap px-5 py-4 font-semibold">
+                                    {{ $order->dispatch_id }}
+                                </td>
+                                <td class="px-5 py-4">
+                                    {{ $order->customer->customer_name ?? 'N/A' }}
+                                </td>
+                                <td class="px-5 py-4">
+                                    {{ $order->restaurant->restaurant_name ?? 'N/A' }}
+                                </td>
+                                <td class="px-5 py-4">
+                                    {{ $order->rider->rider_name ?? 'Unassigned' }}
+                                </td>
+                                <td class="whitespace-nowrap px-5 py-4 font-semibold">
+                                    ₱{{ number_format((float) $order->total_bill, 2) }}
+                                </td>
+                                <td class="px-5 py-4">
+                                    <span class="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                                        {{ ucfirst(str_replace('_', ' ', $order->dispatch_status)) }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-5 py-10 text-center text-slate-500">
+                                    No food orders yet. Click “Create Order” to add one.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="border-t border-slate-200 p-5">
+                {{ $foodOrders->links() }}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
